@@ -6,8 +6,6 @@ on:
       - '**'
   workflow_dispatch:
 
-name: Example
-
 jobs:
   check-lint:
     name: python
