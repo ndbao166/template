@@ -1,0 +1,95 @@
+version: '3.8'
+
+services:
+  redis:
+    build:
+      context: .
+      dockerfile: docker/redis/dockerfile
+    container_name: pi_redis
+    expose:
+      - "6379"
+    ports:
+      - "6379:6379"
+    # volumes:
+    #   - redis_data:/data
+    networks:
+      - pi_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "-p", "6379", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend/dockerfile
+    container_name: pi_backend
+    # expose:
+    #   - "8000"
+    # ports:
+    #   - "8000:8000"
+    env_file:
+      - .env
+    networks:
+      - pi_network
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/docs"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  celery:
+    build:
+      context: .
+      dockerfile: docker/celery/dockerfile
+    container_name: pi_celery
+    env_file:
+      - .env
+    networks:
+      - pi_network
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend/dockerfile
+    container_name: pi_frontend
+    # expose:
+    #   - "3000"
+    # ports:
+    #   - "3000:3000"
+    env_file:
+      - .env
+    networks:
+      - pi_network
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  nginx:
+    build:
+      context: .
+      dockerfile: docker/nginx/dockerfile
+    container_name: pi_nginx
+    ports:
+      - "${NGINX_PORT:-80}:80"
+    networks:
+      - pi_network
+    depends_on:
+      - backend
+      - frontend
+    restart: unless-stopped
+
+networks:
+  pi_network:
+    driver: bridge

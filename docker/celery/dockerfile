@@ -23,4 +23,4 @@ EXPOSE 8000
 RUN make install
 
 # Default command
-CMD ["sh", "-c", "make run"]
+CMD ["sh", "-c", "make celery-worker"]

@@ -2,7 +2,6 @@ from functools import lru_cache
 
 from loguru import logger
 from pydantic import BaseModel
-from rich.pretty import pretty_repr
 
 from app.config.settings import settings
 
@@ -38,7 +37,6 @@ class AppConfig(BaseModel):
         try:
             with open(yaml_path, encoding="utf-8") as file:
                 yaml_data = yaml.safe_load(file)
-                logger.info(f"✅ Config from {yaml_path} loaded successfully: \n{pretty_repr(yaml_data)}")
                 return cls(**yaml_data)
         except Exception as e:
             logger.exception(f"🆘 Error loading app config from {yaml_path}: {e}")

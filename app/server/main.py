@@ -1,7 +1,6 @@
-from typing import Any
-
 import uvicorn
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.server import lifespan
@@ -14,15 +13,19 @@ app = FastAPI(
     dependencies=[],
 )
 
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Vite default port and common React ports
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 @app.get("/")
 async def root() -> str:
     return "Hello word"
-
-
-@app.get("/items/{item_id}")
-async def read_item(item_id: str) -> dict[str, Any]:
-    return {"item_id": item_id}
 
 
 if __name__ == "__main__":
