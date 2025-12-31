@@ -6,9 +6,19 @@ from fastapi import FastAPI
 from app.config import app_config, settings
 
 
-def setup_app() -> None:
+async def setup_app() -> None:
     from loguru import logger
     from rich.pretty import pretty_repr
+
+    from app.database import setup_mongodb
+
+    await setup_mongodb(
+        host=settings.MONGODB_HOST,
+        port=settings.MONGODB_PORT,
+        username=settings.MONGODB_USERNAME,
+        password=settings.MONGODB_PASSWORD,
+        database_name=settings.MONGODB_DATABASE,
+    )
 
     logger.info(f"🚀 App has been started: http://{settings.HOST}:{settings.PORT}")
     logger.info(f"🚀 OpenAPI docs: http://{settings.HOST}:{settings.PORT}/docs")
@@ -16,12 +26,14 @@ def setup_app() -> None:
 
 
 def clean_app() -> None:
-    pass
+    from app.database import close_mongodb
+
+    close_mongodb()
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-    setup_app()
+    await setup_app()
     yield
     clean_app()
 

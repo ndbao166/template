@@ -2,13 +2,11 @@ from celery import Celery
 
 from app.config import settings
 
-REDIS_URL = settings.REDIS_URL_MESSAGE_BROKER
-
 # Create Celery app
 celery_app = Celery(
     "mas_eval",
-    broker=REDIS_URL,
-    backend=REDIS_URL,
+    broker=settings.REDIS_URL_MESSAGE_BROKER,
+    backend=settings.REDIS_URL_MESSAGE_BROKER,
 )
 
 # Configure Celery
